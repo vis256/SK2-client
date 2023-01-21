@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Hello World!</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="lib/pico.min.css">
+    <script src="lib/JZZ.js"></script>
+    <script src="lib/JZZ.synth.Tiny.js"></script>
+    <script src="lib/JZZ.input.Kbd.js"></script>
+    <script src="lib/xeact.js"></script>
+  </head>
+  <body class="container">
+    <form onsubmit="onFormSubmit" id="login-form">
+      <div class="grid">
+        <label>
+          Adres
+          <input value="127.0.0.1" id="ip-input">
+        </label>
+
+        <label>
+          Port
+          <input type="number" value="10000" id="port-input">
+        </label>
+
+        <button onclick="connect()">Connect</button>
+      </div>
+    </form>
+
+    <div id="rooms-container" class="container disabled">
+      <div class="grid">
+        <h4>Rooms</h4>
+        <button onclick="createAndJoinRoom()">+ New room</button>
+      </div>
+      <div id="room-list"></div>
+    </div>
+
+
+    <div id=piano></div>
+
+    <script src="./renderer.js"></script>
+  </body>
+</html>

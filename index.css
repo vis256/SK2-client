@@ -1,0 +1,36 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    overflow-y: hidden;
+}
+
+#room-list {
+    width: 100%;
+    max-height: 20rem;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.room-entry {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.room-data {
+    width: 10rem;
+}
+
+#piano {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.disabled {
+    pointer-events: none;
+    opacity: .5;
+}
