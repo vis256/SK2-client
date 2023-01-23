@@ -32,6 +32,10 @@ function connect() {
         console.log('disconnected from server');
         cui('login-form', true)
         cui('rooms-container', false);
+        currentRoomID = null;
+        currentUserID = null;
+        loadedRooms = [];
+        isMusician = false;
 
         refreshRoomsInterval = undefined;
     });
@@ -45,6 +49,7 @@ function cui(part, state) {
     }
 }
 
+var currentUserID = null;
 var currentRoomID = null;
 var loadedRooms = [];
 var isMusician = false;
@@ -89,16 +94,34 @@ function buildRoomButtons(rooms) {
     }
 }
 
+function leaveRoom() {
+    if (currentRoomID !== null) {
+        sendData(`leave ${currentRoomID} ${currentUserID}`);
+        currentRoomID = null;
+        currentUserID = null;
+
+        cui('rooms-container', true);
+        cui('room-options', false);
+        sendData("list|");
+    }
+}
+
 
 function changeToMusician() {
-    if (currentRoomID) {
-        sendData(`CHANGEROLE|${currentRoomID} m`);
+    if (currentRoomID !== null) {
+        sendData(`change role ${currentRoomID} M`);
+        cui('musician-button', false);
+        cui('listener-button', true);
+        cui('piano', true);
     }
 }
 
 function changeToListener() {
-    if (currentRoomID) {
-        sendData(`CHANGEROLE|${currentRoomID} s`);
+    if (currentRoomID !== null) {
+        sendData(`change role ${currentRoomID} ${currentUserID}`);
+        cui('musician-button', true);
+        cui('listener-button', false);
+        cui('piano', false);
     }
 }
 
@@ -106,22 +129,46 @@ function joinRoom(id) {
     const rid = id.target._ROOM_ID;
 
     console.log("joining", rid);  
-    sendData(`JOIN|${rid}`);  
+    sendData(`join ${rid}`);
+    
 }
 
 function createAndJoinRoom() {
     if (currentRoomID == undefined || currentRoomID == null) {
-        console.log("creating and joining");
         sendData(`create|`)
     }
 }
 
-function joinCreatedRoom(roomId) {
+function joinCreatedRoom(params) {
+    const a = params[0].split(" ");
+    const roomId = parseInt(a[0]);
+    const userId = parseInt(a[1]);
+    currentUserID = userId;
     currentRoomID = roomId;
-    loadRooms();
     cui('rooms-container', false);
     isMusician = true;
     connectPiano();
+    cui('room-options', true);
+    cui('musician-button', false);
+    cui('listener-button', true);
+    cui('piano', true);
+    sendData("list|");
+}
+
+function onJoinRoom(params) {
+    const a = params[0].split(" ");
+    const roomId = parseInt(a[0]);
+    const userId = parseInt(a[1]);
+    currentUserID = userId;
+    currentRoomID = roomId;
+    cui('rooms-container', false);
+    isMusician = false;
+    connectPiano();
+    cui('room-options', true);
+    cui('musician-button', true);
+    cui('listener-button', false);
+    cui('piano', true);
+    sendData("list|");
 }
 
 function parseReceivedMessage(message) {
@@ -134,13 +181,11 @@ function parseReceivedMessage(message) {
             break;
 
         case "JOINNEW":
-            joinCreatedRoom(parseInt(params[0]));
+            joinCreatedRoom(params);
             break;
     
         case "JOIN":
-            currentRoomID = params[0];
-            connectPiano();
-            
+            onJoinRoom(params);
             break;
 
         default:

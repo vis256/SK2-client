@@ -35,7 +35,12 @@
     </div>
 
 
-    <div id=piano></div>
+    <div id="piano" class="disabled"></div>
+    <div id="room-options" class="grid disabled">
+      <button onclick="leaveRoom()" class="warning">Leave</button>
+      <button onclick="changeToMusician()" id="musician-button">-> Musician</button>
+      <button onclick="changeToListener()" id="listener-button">-> Listener</button>
+    </div>
 
     <script src="./renderer.js"></script>
   </body>
