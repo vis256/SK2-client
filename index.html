@@ -11,25 +11,24 @@
     <script src="lib/xeact.js"></script>
   </head>
   <body class="container">
-    <form onsubmit="onFormSubmit" id="login-form">
-      <div class="grid">
-        <label>
-          Adres
-          <input value="127.0.0.1" id="ip-input">
-        </label>
+    <div class="grid" id="login-form">
+      <label>
+        Address
+        <input value="127.0.0.1" id="ip-input">
+      </label>
 
-        <label>
-          Port
-          <input type="number" value="10000" id="port-input">
-        </label>
+      <label>
+        Port
+        <input type="number" value="10000" id="port-input">
+      </label>
 
-        <button onclick="connect()">Connect</button>
-      </div>
-    </form>
+      <button onclick="connect()">Connect</button>
+    </div>
 
     <div id="rooms-container" class="container disabled">
       <div class="grid">
         <h4>Rooms</h4>
+        <button onclick="loadRooms()">+ Refresh</button>
         <button onclick="createAndJoinRoom()">+ New room</button>
       </div>
       <div id="room-list"></div>

@@ -1,22 +1,26 @@
 const { app, BrowserWindow } = require('electron')
 
-const createWindow = () => {
-    const win = new BrowserWindow({
-        width: 1280,
-        height: 720,
-        webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false
-        }
+try {
+    const createWindow = () => {
+        const win = new BrowserWindow({
+            width: 1600,
+            height: 900,
+            webPreferences: {
+                nodeIntegration: true,
+                contextIsolation: false
+            }
+        })
+    
+        win.loadFile('index.html')
+    }
+    
+    app.whenReady().then(() => {
+        createWindow()
     })
-
-    win.loadFile('index.html')
+    
+    app.on('window-all-closed', () => {
+        if (process.platform !== 'darwin') app.quit()
+    })
+} catch (error) {
+    console.error(error);
 }
-
-app.whenReady().then(() => {
-    createWindow()
-})
-
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit()
-})

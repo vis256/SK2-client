@@ -3,9 +3,7 @@ const net = require('net');
 
 var socketClient;
 
-function onFormSubmit(e) {
-    e.preventDefault();
-}
+var refreshRoomsInterval;
 
 function connect() {
     const ip = g('ip-input').value;
@@ -15,9 +13,11 @@ function connect() {
 
     socketClient = net.connect({host:ip, port},  () => {
         console.log('connected to server!');
-        g('login-form').classList.add('disabled');
-        g('rooms-container').classList.remove('disabled');
+        cui('login-form', false);
+        cui('rooms-container', true);
         loadRooms();
+
+        refreshRoomsInterval = setInterval(loadRooms, 5000);
     });
 
     socketClient.on('data', (data) => {
@@ -30,7 +30,19 @@ function connect() {
 
     socketClient.on('end', () => {
         console.log('disconnected from server');
+        cui('login-form', true)
+        cui('rooms-container', false);
+
+        refreshRoomsInterval = undefined;
     });
+}
+
+function cui(part, state) {
+    if (state) {
+        g(part).classList.remove('disabled');
+    } else {
+        g(part).classList.add('disabled');
+    }
 }
 
 var currentRoomID = null;
@@ -44,8 +56,11 @@ function loadRooms() {
 function buildRoomButtons(rooms) {
     const rl = g('room-list');
     x(rl);
+    loadedRooms = [];
 
     for (const room of rooms) {
+        if (room == '' || room == " ") continue;
+
         // ID USERCOUNT/MAXUSERCOUNT
         console.log({room});
         const _e = room.split(' ');
@@ -74,29 +89,6 @@ function buildRoomButtons(rooms) {
     }
 }
 
-function test() {
-    buildRoomButtons([
-        '1 0/16',
-        '2 1/16',
-        '3 16/16',
-        '3 16/16',
-        '3 16/16',
-        '3 16/16',
-        '3 16/16',
-        '3 16/16',
-        '3 16/16',
-        '3 16/16',
-        '3 16/16',
-        '3 16/16',
-        '3 16/16',
-        '3 16/16',
-        '3 16/16',
-        '3 16/16',
-    ])
-
-}
-
-test()
 
 function changeToMusician() {
     if (currentRoomID) {
@@ -120,16 +112,29 @@ function joinRoom(id) {
 function createAndJoinRoom() {
     if (currentRoomID == undefined || currentRoomID == null) {
         console.log("creating and joining");
-        sendData(`CREATE|`)
+        sendData(`create|`)
     }
+}
+
+function joinCreatedRoom(roomId) {
+    currentRoomID = roomId;
+    loadRooms();
+    cui('rooms-container', false);
+    isMusician = true;
+    connectPiano();
 }
 
 function parseReceivedMessage(message) {
     var messageParts = message.split('|');
     const params = messageParts.slice(1);
+    console.log({params});
     switch (messageParts[0]) {
         case "ROOMS":
             buildRoomButtons( params );
+            break;
+
+        case "JOINNEW":
+            joinCreatedRoom(parseInt(params[0]));
             break;
     
         case "JOIN":
@@ -148,6 +153,10 @@ function sendData(message) {
     socketClient.write(`${message}\r\n`);
 }
 
+function sendNote() {
+    
+}
+
 
 // PIANO
 
@@ -159,5 +168,11 @@ function connectPiano() {
     piano = JZZ.input.ASCII({
         A:'F#4', Z:'G4', S:'G#4', X:'A4', D:'Bb4', C:'B4', V:'C5', G:'C#5', B:'D5',
         H:'D#5', N:'E5', M:'F5', K:'F#5', '<':'G5', L:'G#5', '>':'A5', ':':'Bb5'
-      }).connect(JZZ.input.Kbd({at:'piano'}).connect(JZZ().openMidiOut()));
+      })
+      .connect(JZZ.input.Kbd({at:'piano'})
+      .connect(JZZ().openMidiOut())
+      .connect(function (msg) {
+        console.log(msg.toString());
+      })
+    );
 }
