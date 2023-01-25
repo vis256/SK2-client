@@ -20,6 +20,8 @@ function connect() {
         refreshRoomsInterval = setInterval(loadRooms, 5000);
     });
 
+    socketClient.setTimeout(10000);
+
     socketClient.on('data', (data) => {
         if (data !== undefined && data !== null) {
             const msg = data.toString();
@@ -42,6 +44,18 @@ function connect() {
 
     socketClient.on('error', () => {
         console.log('error from server');
+        cui('login-form', true)
+        cui('rooms-container', false);
+        currentRoomID = null;
+        currentUserID = null;
+        loadedRooms = [];
+        isMusician = false;
+
+        refreshRoomsInterval = undefined; 
+    })
+
+    socketClient.on('timeout', () => {
+        console.log('timeout from server');
         cui('login-form', true)
         cui('rooms-container', false);
         currentRoomID = null;
