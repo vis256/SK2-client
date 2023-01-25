@@ -39,6 +39,18 @@ function connect() {
 
         refreshRoomsInterval = undefined;
     });
+
+    socketClient.on('error', () => {
+        console.log('error from server');
+        cui('login-form', true)
+        cui('rooms-container', false);
+        currentRoomID = null;
+        currentUserID = null;
+        loadedRooms = [];
+        isMusician = false;
+
+        refreshRoomsInterval = undefined; 
+    })
 }
 
 function cui(part, state) {
@@ -109,7 +121,7 @@ function leaveRoom() {
 
 function changeToMusician() {
     if (currentRoomID !== null) {
-        sendData(`change role ${currentRoomID} M`);
+        sendData(`change role ${currentRoomID} ${currentUserID} M`);
         cui('musician-button', false);
         cui('listener-button', true);
         cui('piano', true);
@@ -118,7 +130,7 @@ function changeToMusician() {
 
 function changeToListener() {
     if (currentRoomID !== null) {
-        sendData(`change role ${currentRoomID} ${currentUserID}`);
+        sendData(`change role ${currentRoomID} ${currentUserID} L`);
         cui('musician-button', true);
         cui('listener-button', false);
         cui('piano', false);
