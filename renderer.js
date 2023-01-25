@@ -14,6 +14,8 @@ function connect() {
     socketClient = net.connect({host:ip, port},  () => {
         console.log('connected to server!');
         cui('login-form', false);
+        cui('connect-button', false);
+        cui('disconnect-button', true);
         cui('rooms-container', true);
         loadRooms();
 
@@ -32,7 +34,9 @@ function connect() {
 
     socketClient.on('end', () => {
         console.log('disconnected from server');
-        cui('login-form', true)
+        cui('login-form', true);
+        cui('connect-button', true);
+        cui('disconnect-button', false);
         cui('rooms-container', false);
         currentRoomID = null;
         currentUserID = null;
@@ -44,27 +48,43 @@ function connect() {
 
     socketClient.on('error', () => {
         console.log('error from server');
-        cui('login-form', true)
+        cui('login-form', true);
+        cui('connect-button', true);
+        cui('disconnect-button', false);
         cui('rooms-container', false);
         currentRoomID = null;
         currentUserID = null;
         loadedRooms = [];
         isMusician = false;
+        socketClient.end()
 
         refreshRoomsInterval = undefined; 
     })
 
     socketClient.on('timeout', () => {
         console.log('timeout from server');
-        cui('login-form', true)
+        cui('login-form', true);
+        cui('connect-button', true);
+        cui('disconnect-button', false);
         cui('rooms-container', false);
         currentRoomID = null;
         currentUserID = null;
         loadedRooms = [];
         isMusician = false;
 
+        socketClient.end();
         refreshRoomsInterval = undefined; 
     })
+}
+
+function disconnect() {
+    console.log("disconnecting");
+    cui('login-form', true);
+    cui('connect-button', true);
+    cui('disconnect-button', false);
+    cui('rooms-container', false);
+    socketClient.pause();
+    socketClient.end();
 }
 
 function cui(part, state) {
@@ -197,6 +217,14 @@ function onJoinRoom(params) {
     sendData("list|");
 }
 
+function onReceiveNote(params) {
+    console.log({params});
+    const noteData = params.trim().split(" ").map(e => parseInt(e));
+    console.log({noteData});
+}
+
+onReceiveNote();
+
 function parseReceivedMessage(message) {
     var messageParts = message.split('|');
     const params = messageParts.slice(1);
@@ -214,6 +242,10 @@ function parseReceivedMessage(message) {
             onJoinRoom(params);
             break;
 
+        // NOTE| 147 147 147
+        case "NOTE":
+            onReceiveNote(params);
+
         default:
             break;
     }
@@ -224,8 +256,8 @@ function sendData(message) {
     socketClient.write(`${message}\r\n`);
 }
 
-function sendNote() {
-    
+function sendNote(msg) {
+    sendData(`NOTE| ${currentRoomID} ${currentUserID} ${msg[0]} ${msg[1]} ${msg[2]}`)
 }
 
 
@@ -243,7 +275,7 @@ function connectPiano() {
       .connect(JZZ.input.Kbd({at:'piano'})
       .connect(JZZ().openMidiOut())
       .connect(function (msg) {
-        console.log(msg.toString());
+        sendNote(msg)
       })
     );
 }

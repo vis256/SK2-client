@@ -22,7 +22,10 @@
         <input type="number" value="10000" id="port-input">
       </label>
 
-      <button onclick="connect()">Connect</button>
+    </div>
+    <div class="grid">
+      <button id="connect-button" onclick="connect()">Connect</button>
+      <button id="disconnect-button" class="disabled" onclick="disconnect()">Disconnect</button>
     </div>
 
     <div id="rooms-container" class="container disabled">
