@@ -19,7 +19,7 @@ function connect() {
         cui('rooms-container', true);
         loadRooms();
 
-        refreshRoomsInterval = setInterval(loadRooms, 5000);
+        // refreshRoomsInterval = setInterval(loadRooms, 5000);
     });
 
     socketClient.setTimeout(10000);
@@ -41,6 +41,7 @@ function connect() {
         currentRoomID = null;
         currentUserID = null;
         loadedRooms = [];
+        buildRoomButtons([]);
         isMusician = false;
 
         refreshRoomsInterval = undefined;
@@ -55,6 +56,7 @@ function connect() {
         currentRoomID = null;
         currentUserID = null;
         loadedRooms = [];
+        buildRoomButtons([]);
         isMusician = false;
         socketClient.end()
 
@@ -70,6 +72,7 @@ function connect() {
         currentRoomID = null;
         currentUserID = null;
         loadedRooms = [];
+        buildRoomButtons([]);
         isMusician = false;
 
         socketClient.end();
@@ -83,6 +86,9 @@ function disconnect() {
     cui('connect-button', true);
     cui('disconnect-button', false);
     cui('rooms-container', false);
+    cui('piano', false);
+    x(g('piano'));
+    buildRoomButtons([]);
     socketClient.pause();
     socketClient.end();
 }
@@ -148,6 +154,7 @@ function leaveRoom() {
 
         cui('rooms-container', true);
         cui('room-options', false);
+        x( g('piano') );
         sendData("list|");
     }
 }
@@ -156,18 +163,13 @@ function leaveRoom() {
 function changeToMusician() {
     if (currentRoomID !== null) {
         sendData(`change role ${currentRoomID} ${currentUserID} M`);
-        cui('musician-button', false);
-        cui('listener-button', true);
-        cui('piano', true);
     }
 }
 
 function changeToListener() {
     if (currentRoomID !== null) {
         sendData(`change role ${currentRoomID} ${currentUserID} L`);
-        cui('musician-button', true);
-        cui('listener-button', false);
-        cui('piano', false);
+
     }
 }
 
@@ -213,17 +215,35 @@ function onJoinRoom(params) {
     cui('room-options', true);
     cui('musician-button', true);
     cui('listener-button', false);
-    cui('piano', true);
+    cui('piano', false);
     sendData("list|");
 }
 
 function onReceiveNote(params) {
-    console.log({ params });
-    const noteData = params.trim().split(" ").map(e => parseInt(e));
+    const noteData = params[0].trim().split(" ").map(e => parseInt(e));
+    piano.send(noteData);
     console.log({ noteData });
 }
 
-onReceiveNote(" 147 147 147");
+function onChangeRole(params) {
+    const role = params[0];
+    switch (role) {
+        case "L":
+            cui('musician-button', true);
+            cui('listener-button', false);
+            cui('piano', false);
+            break;
+
+        case "M":
+            cui('musician-button', false);
+            cui('listener-button', true);
+            cui('piano', true);
+            break;
+    
+        default:
+            break;
+    }
+}
 
 function parseReceivedMessage(message) {
     var messageParts = message.split('|');
@@ -245,6 +265,11 @@ function parseReceivedMessage(message) {
         // NOTE| 147 147 147
         case "NOTE":
             onReceiveNote(params);
+            break;
+
+        case "ROLE":
+            onChangeRole(params);
+            break;
 
         default:
             break;
