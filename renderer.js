@@ -9,9 +9,9 @@ function connect() {
     const ip = g('ip-input').value;
     const port = parseInt(g('port-input').value);
 
-    console.log({ip, port});
+    console.log({ ip, port });
 
-    socketClient = net.connect({host:ip, port},  () => {
+    socketClient = net.connect({ host: ip, port }, () => {
         console.log('connected to server!');
         cui('login-form', false);
         cui('connect-button', false);
@@ -58,7 +58,7 @@ function connect() {
         isMusician = false;
         socketClient.end()
 
-        refreshRoomsInterval = undefined; 
+        refreshRoomsInterval = undefined;
     })
 
     socketClient.on('timeout', () => {
@@ -73,7 +73,7 @@ function connect() {
         isMusician = false;
 
         socketClient.end();
-        refreshRoomsInterval = undefined; 
+        refreshRoomsInterval = undefined;
     })
 }
 
@@ -113,30 +113,30 @@ function buildRoomButtons(rooms) {
         if (room == '' || room == " ") continue;
 
         // ID USERCOUNT/MAXUSERCOUNT
-        console.log({room});
+        console.log({ room });
         const _e = room.split(' ');
         const _f = _e[1].split('/');
-        
+
         const [id, userCount, maxuserCount] = [parseInt(_e), _f[0], _f[1]];
-        loadedRooms.push({id, userCount, maxuserCount});
+        loadedRooms.push({ id, userCount, maxuserCount });
     }
 
     for (const room of loadedRooms) {
-        rl.appendChild( h(
+        rl.appendChild(h(
             "div",
-            { classList : ['room-entry'] },
+            { classList: ['room-entry'] },
             [
                 h(
-                    "h4", 
+                    "h4",
                     { innerText: `#${room.id} ${room.userCount}/${room.maxuserCount}`, classList: ['room-data'] }
                 ),
                 h(
-                    "button", 
+                    "button",
                     { innerText: "Join", onclick: joinRoom, _ROOM_ID: room.id, role: 'button' }
                 ),
             ]
         ));
-        
+
     }
 }
 
@@ -174,9 +174,9 @@ function changeToListener() {
 function joinRoom(id) {
     const rid = id.target._ROOM_ID;
 
-    console.log("joining", rid);  
+    console.log("joining", rid);
     sendData(`join ${rid}`);
-    
+
 }
 
 function createAndJoinRoom() {
@@ -218,26 +218,26 @@ function onJoinRoom(params) {
 }
 
 function onReceiveNote(params) {
-    console.log({params});
+    console.log({ params });
     const noteData = params.trim().split(" ").map(e => parseInt(e));
-    console.log({noteData});
+    console.log({ noteData });
 }
 
-onReceiveNote();
+onReceiveNote(" 147 147 147");
 
 function parseReceivedMessage(message) {
     var messageParts = message.split('|');
     const params = messageParts.slice(1);
-    console.log({params});
+    console.log({ params });
     switch (messageParts[0]) {
         case "ROOMS":
-            buildRoomButtons( params );
+            buildRoomButtons(params);
             break;
 
         case "JOINNEW":
             joinCreatedRoom(params);
             break;
-    
+
         case "JOIN":
             onJoinRoom(params);
             break;
@@ -257,7 +257,7 @@ function sendData(message) {
 }
 
 function sendNote(msg) {
-    sendData(`NOTE| ${currentRoomID} ${currentUserID} ${msg[0]} ${msg[1]} ${msg[2]}`)
+    sendData(`NOTE|${currentRoomID} ${currentUserID} ${msg[0]} ${msg[1]} ${msg[2]}`)
 }
 
 
@@ -269,13 +269,13 @@ var piano;
 
 function connectPiano() {
     piano = JZZ.input.ASCII({
-        A:'F#4', Z:'G4', S:'G#4', X:'A4', D:'Bb4', C:'B4', V:'C5', G:'C#5', B:'D5',
-        H:'D#5', N:'E5', M:'F5', K:'F#5', '<':'G5', L:'G#5', '>':'A5', ':':'Bb5'
-      })
-      .connect(JZZ.input.Kbd({at:'piano'})
-      .connect(JZZ().openMidiOut())
-      .connect(function (msg) {
-        sendNote(msg)
-      })
-    );
+        A: 'F#4', Z: 'G4', S: 'G#4', X: 'A4', D: 'Bb4', C: 'B4', V: 'C5', G: 'C#5', B: 'D5',
+        H: 'D#5', N: 'E5', M: 'F5', K: 'F#5', '<': 'G5', L: 'G#5', '>': 'A5', ':': 'Bb5'
+    })
+        .connect(JZZ.input.Kbd({ at: 'piano' })
+            .connect(JZZ().openMidiOut())
+            .connect(function (msg) {
+                sendNote(msg)
+            })
+        );
 }
