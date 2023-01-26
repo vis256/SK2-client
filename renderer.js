@@ -19,7 +19,7 @@ function connect() {
         cui('rooms-container', true);
         loadRooms();
 
-        // refreshRoomsInterval = setInterval(loadRooms, 5000);
+        refreshRoomsInterval = setInterval(loadRooms, 5000);
     });
 
     socketClient.setTimeout(10000);
