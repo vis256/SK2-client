@@ -221,23 +221,28 @@ function onJoinRoom(params) {
 
 function onReceiveNote(params) {
     const noteData = params[0].trim().split(" ").map(e => parseInt(e));
-    piano.send(noteData);
     console.log({ noteData });
+
+    if (!isMusician)
+        piano.send(noteData);
 }
 
 function onChangeRole(params) {
     const role = params[0];
+    console.log({XDDDDD: role});
     switch (role) {
         case "L":
             cui('musician-button', true);
             cui('listener-button', false);
             cui('piano', false);
+            isMusician = false;
             break;
 
         case "M":
             cui('musician-button', false);
             cui('listener-button', true);
             cui('piano', true);
+            isMusician = true;
             break;
     
         default:
@@ -282,7 +287,9 @@ function sendData(message) {
 }
 
 function sendNote(msg) {
-    sendData(`NOTE|${currentRoomID} ${currentUserID} ${msg[0]} ${msg[1]} ${msg[2]}`)
+    if (isMusician) {
+        sendData(`NOTE|${currentRoomID} ${currentUserID} ${msg[0]} ${msg[1]} ${msg[2]}`)
+    }
 }
 
 
